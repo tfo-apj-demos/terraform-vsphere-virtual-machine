@@ -9,6 +9,15 @@ variable content_library_name {
   default = ""
 }
 
+variable content_library_item_type {
+  type    = string
+  default = "vm-template"
+  validation {
+    condition     = var.content_library_item_type == "ovf" || var.content_library_item_type == "iso" || var.content_library_item_type == "vm-template"
+    error_message = "Must be one of ovf, iso, or vm-template."
+  }
+}
+
 variable custom_attributes {
   description = "A list of custom attributes to assign to your vm."
   type        = list(string)
