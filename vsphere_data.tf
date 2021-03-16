@@ -13,7 +13,6 @@ data vsphere_content_library_item "this" {
   for_each   = var.content_library_name != "" ? toset([var.template]) : toset([])
   name       = each.value
   library_id = data.vsphere_content_library.this[var.content_library_name].id
-  #type       = var.content_library_item_type
 }
 
 data vsphere_datacenter "this" {

@@ -4,8 +4,10 @@ module "terraform_agent" {
   datacenter        = "Core"
   cluster           = "Management"
   primary_datastore = "hl-core-ds02"
-  networks          = {
-    "VM Network":"dhcp"
+  networks = {
+    "VM Network" : "dhcp"
   }
-  template          = "consul_sso-srv"
+  template = "ubuntu-18.04-packer-20210223073204"
+  num_cpus = 4
+  memory   = 4096
 }
