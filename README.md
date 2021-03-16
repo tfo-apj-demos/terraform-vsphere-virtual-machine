@@ -8,7 +8,7 @@ The following code sample shows a quick and easy starting point.
 
 ```
 module vsphere_machine {
-  source = "github.com/grantorchard/terraform-vsphere-module-virtual-machine"
+  source = "github.com/terraform-vsphere-modules/terraform-vsphere-virtual-machine"
 
   datacenter                = "Core"
   cluster                   = "Management"

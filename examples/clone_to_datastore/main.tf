@@ -1,5 +1,5 @@
 module "terraform_agent" {
-  source = "../../"
+  source = "github.com/terraform-vsphere-modules/terraform-vsphere-virtual-machine"
 
   datacenter        = "Core"
   cluster           = "Management"
@@ -8,6 +8,4 @@ module "terraform_agent" {
     "VM Network" : "dhcp"
   }
   template = "ubuntu-18.04-packer-20210223073204"
-  num_cpus = 4
-  memory   = 4096
 }
