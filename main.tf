@@ -3,16 +3,16 @@ locals {
   hostname = var.hostname != "" ? var.hostname : "${random_pet.this.id}-${random_integer.this.result}"
 }
 
-resource random_pet "this" {
+resource "random_pet" "this" {
   length = 1
 }
 
-resource random_integer "this" {
+resource "random_integer" "this" {
   min = 1000
   max = 9999
 }
 
-resource vsphere_virtual_machine "this" {
+resource "vsphere_virtual_machine" "this" {
   name             = local.hostname
   resource_pool_id = var.resource_pool != "" ? data.vsphere_resource_pool.this[var.resource_pool].id : data.vsphere_compute_cluster.this[var.cluster].resource_pool_id
 
