@@ -41,7 +41,7 @@ resource "vsphere_virtual_machine" "this" {
     for_each = var.template != "" ? [0] : []
     content {
       label            = "disk0"
-      size             = local.size
+      size             = var.disk_0_size#local.size
       eagerly_scrub    = data.vsphere_virtual_machine.this[var.template].disks[0].eagerly_scrub
       thin_provisioned = data.vsphere_virtual_machine.this[var.template].disks[0].thin_provisioned
     }

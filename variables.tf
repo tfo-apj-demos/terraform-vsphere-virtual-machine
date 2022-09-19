@@ -223,3 +223,7 @@ variable "extra_disks" {
   type    = list(map(string))
   default = []
 }
+
+variable "disk_0_size" {
+	default = 40
+}
