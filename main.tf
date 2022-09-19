@@ -1,6 +1,7 @@
 locals {
   windows  = var.template != "" ? length(regexall("^win", data.vsphere_virtual_machine.this[var.template].guest_id)) > 0 : null
   hostname = var.hostname != "" ? var.hostname : "${random_pet.this.id}-${random_integer.this.result}"
+	size = data.vsphere_virtual_machine.this[var.template].disks[0].size
 }
 
 resource "random_pet" "this" {
@@ -40,7 +41,7 @@ resource "vsphere_virtual_machine" "this" {
     for_each = var.template != "" ? [0] : []
     content {
       label            = "disk0"
-      size             = data.vsphere_virtual_machine.this[var.template].disks[0].size
+      size             = local.size
       eagerly_scrub    = data.vsphere_virtual_machine.this[var.template].disks[0].eagerly_scrub
       thin_provisioned = data.vsphere_virtual_machine.this[var.template].disks[0].thin_provisioned
     }
