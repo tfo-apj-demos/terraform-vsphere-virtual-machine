@@ -73,6 +73,11 @@ variable "tag_categories" {
   default = []
 }
 
+variable "guest_network_timeout" {
+  type = string
+  default = 2
+}
+
 variable "template" {
   type    = string
   default = ""
