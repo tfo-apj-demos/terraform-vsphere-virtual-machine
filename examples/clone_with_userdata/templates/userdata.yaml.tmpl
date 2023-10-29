@@ -1,0 +1,10 @@
+#cloud-config
+packages:
+  - nginx
+write_files:
+  - content: |
+      this file is created by userdata
+      ${custom_text}
+    owner: ubuntu:ubuntu
+    path: /home/ubuntu/userdata.txt
+    permissions: '0644'

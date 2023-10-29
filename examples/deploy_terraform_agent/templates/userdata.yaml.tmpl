@@ -1,0 +1,6 @@
+#cloud-config
+packages:
+  - docker-ce
+runcmd:
+  - docker pull hashicorp/tfc-agent:latest
+  - docker run -e TFC_AGENT_TOKEN=${agent_token} -e TFC_AGENT_NAME=${agent_name} --restart always hashicorp/tfc-agent

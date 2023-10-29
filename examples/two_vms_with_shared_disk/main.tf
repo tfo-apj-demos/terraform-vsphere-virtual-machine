@@ -1,12 +1,21 @@
-module "first_vm" {
-  source = "../../"
+data "hcp_packer_image" "this" {
+  bucket_name     = "base-ubuntu-2204"
+  channel         = "latest"
+  cloud_provider  = "vsphere"
+  region          = "Datacenter"
+}
 
-  datacenter        = "Core"
-  cluster           = "Management"
-  primary_datastore = "hl-core-ds02"
-  template          = "consul_sso-srv"
+module "vm" {
+  source = "../../"
+  count = 2
+
+  datacenter        = "Datacenter"
+  cluster           = "cluster"
+  primary_datastore = "vsanDatastore"
+  template          = data.hcp_packer_image.this.cloud_image_id
+  folder_path       = "demo workloads"
   networks          = {
-    "VM Network":"dhcp"
+    "seg-general" : "dhcp"
   }
   extra_disks       = [
     {
@@ -15,13 +24,18 @@ module "first_vm" {
       "datastore_id":vsphere_virtual_disk.this.datastore
     }
   ]
+
+    metadata = templatefile("${path.module}/templates/metadata.yaml.tmpl", {
+    dhcp = true
+    hostname = "peppa-pig-${count.index}"
+  })
 }
 
-resource vsphere_virtual_disk "this" {
+resource "vsphere_virtual_disk" "this" {
   size       = 2
   vmdk_path  = "/shared_disk/module.vmdk"
   create_directories = true
-  datacenter = "Core"
-  datastore  = "hl-core-ds02"
+  datacenter = "Datacenter"
+  datastore  = "vsanDatastore"
   type       = "eagerZeroedThick"
 }
