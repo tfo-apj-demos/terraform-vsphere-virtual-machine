@@ -37,3 +37,9 @@ variable "hostname" {
   type        = string
   default     = "gary"
 }
+
+variable "vsphere_template_name" {
+  description = "The name of the vSphere template to use for VM creation."
+  type        = string
+}
+
