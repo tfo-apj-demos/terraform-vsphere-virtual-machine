@@ -18,6 +18,9 @@ resource "tfe_agent_token" "this" {
 module "vm" {
   source = "../.."
 
+  vsphere_user     = var.vsphere_user
+  vsphere_password = var.vsphere_password
+  vsphere_server   = var.vsphere_server
   hostname          = var.hostname
   datacenter        = var.datacenter
   cluster           = var.cluster
