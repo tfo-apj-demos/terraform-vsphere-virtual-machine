@@ -27,7 +27,7 @@ variable "folder_path" {
 variable "networks" {
   description = "A map of network configurations."
   type        = map(string)
-  default     = {
+  default = {
     "seg-general" = "dhcp"
   }
 }
