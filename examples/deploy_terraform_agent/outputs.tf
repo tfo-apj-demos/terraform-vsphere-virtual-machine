@@ -1,6 +1,6 @@
-output "machine_ip" {
-  description = "The IP address of the provisioned VM."
-  value       = module.vm.ip_address
+output "machine_ips" {
+  description = "The IP addresses of the provisioned VMs."
+  value       = { for key, vm_instance in module.vm : key => vm_instance.ip_address }
 }
 
 output "agent_pool_id" {
