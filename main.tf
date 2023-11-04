@@ -27,6 +27,7 @@ resource "vsphere_virtual_machine" "this" {
   name             = local.hostname
   folder           = var.folder_path != "" ? var.folder_path : null
   resource_pool_id = var.resource_pool != "" ? data.vsphere_resource_pool.this[var.resource_pool].id : data.vsphere_compute_cluster.this[var.cluster].resource_pool_id
+  tags             = var.tag_ids
 
   datastore_id         = var.primary_datastore != "" ? data.vsphere_datastore.this[var.primary_datastore].id : null
   datastore_cluster_id = var.primary_datastore_cluster != "" ? data.vsphere_datastore_cluster.this[var.primary_datastore_cluster].id : null
