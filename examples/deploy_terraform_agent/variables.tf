@@ -35,7 +35,7 @@ variable "networks" {
 variable "hostname" {
   description = "The hostname for the VM."
   type        = string
-  default     = "aaron-tfc-agent-01"
+  default     = ""
 }
 
 variable "vsphere_template_name" {
