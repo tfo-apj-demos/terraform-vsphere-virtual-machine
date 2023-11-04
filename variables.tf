@@ -258,3 +258,9 @@ variable "folder_path" {
   type = string
   default = ""
 }
+
+variable "tag_ids" {
+  description = "A list of tag IDs to attach to the VM"
+  type        = list(string)
+  default     = []
+}
