@@ -35,7 +35,6 @@ variable "networks" {
 variable "hostname" {
   description = "The hostname for the VM."
   type        = string
-  default     = ""
 }
 
 variable "vsphere_template_name" {
