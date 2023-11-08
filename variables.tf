@@ -1,19 +1,3 @@
-variable "vsphere_user" {
-  description = "The vSphere username."
-  type        = string
-}
-
-variable "vsphere_password" {
-  description = "The vSphere password."
-  type        = string
-  sensitive   = true   # This ensures the password isn't printed in logs
-}
-
-variable "vsphere_server" {
-  description = "The vSphere server address."
-  type        = string
-}
-
 variable "cluster" {
   description = "The name of the cluster into which you want your workload provisioned. Must be set if resource_pool is not set."
   type        = string
