@@ -55,12 +55,6 @@ data "vsphere_storage_policy" "this" {
   name     = each.value
 }
 
-data "vsphere_tag" "this" {
-  for_each    = toset(var.tags)
-  name        = each.value["name"]
-  category_id = each.value["category_id"]
-}
-
 data "vsphere_tag_category" "this" {
   for_each = toset(var.tag_categories)
   name     = each.value
@@ -77,4 +71,13 @@ data "vsphere_vmfs_disks" "this" {
   host_system_id = each.value["host_id"]
   rescan         = true
   filter         = each.value["filter"]
+}
+
+module "tags" {
+  for_each = var.tags
+  source = "./modules/tags"
+
+  tag_category_name = each.key
+  tag_name = each.value
+
 }

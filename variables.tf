@@ -63,11 +63,6 @@ variable "storage_policies" {
   default = []
 }
 
-variable "tags" {
-  type    = list(map(string))
-  default = []
-}
-
 variable "tag_categories" {
   type    = list(string)
   default = []
@@ -241,4 +236,9 @@ variable "metadata" {
 variable "folder_path" {
   type = string
   default = ""
+}
+
+variable "tags" {
+  type    = map(string)
+  default = {}
 }
