@@ -1,25 +1,6 @@
 # This file is maintained automatically by "terraform init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/hashicorp/hcp" {
-  version = "0.74.1"
-  hashes = [
-    "h1:o366M4g0dPFLMc8NQ174WrcDisJSv67T4N/M+D2f1Bo=",
-    "zh:0057c97cc4b028d05e3f0e859d33657708b2b4f889110e0150f51d667f915480",
-    "zh:0fa82a384b25a58b65523e0ea4768fa1212b1f5cfc0c9379d31162454fedcc9d",
-    "zh:17f2ec01bab8e05429edc97dd93e51ba58c468362a96d550cb63d673d41419cb",
-    "zh:455e3451117bf88132e84ed94c820d1056f1938861265ae4a8cb3d7adffe271b",
-    "zh:5a979c29e9be0ed67394662b72b83062f4965920fe5c8f6132907cfb452443a6",
-    "zh:67e2a470fec8cedcf920eea8a80de4097d97b7e9b09781daa98aa42d9a3c1bd9",
-    "zh:81d026a63c6cd0d69e2bf1a3bc11f2c041d3ea78961f092861b530826aa43638",
-    "zh:babe066c7d23d57bee9b97258461cfd12142cb20a4bf8af28effc7f8e87bdd95",
-    "zh:c1d00ade6a862426d2b38b0886669f6c420cd7d41dddc12ef51d0e65fa7a1724",
-    "zh:c7283195401cbf4b07d6e390e6fc0e0d4ceccd0dd1de8fb5bc38f6d7899ec86e",
-    "zh:d2b7202d0e055a9f81a0c00488ee60ca7c11d83d47134070a1358d8b55f3868e",
-    "zh:ec6172d67f9bfa5a1ff947e10517fdc5d2e2759bb4528958f42fda8192b0b173",
-  ]
-}
-
 provider "registry.terraform.io/hashicorp/random" {
   version = "3.5.1"
   hashes = [
