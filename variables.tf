@@ -220,7 +220,7 @@ variable "extra_disks" {
 }
 
 variable "disk_0_size" {
-	default = 40
+	default = 60
 }
 
 variable "userdata" {
