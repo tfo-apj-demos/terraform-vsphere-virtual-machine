@@ -28,8 +28,4 @@ module "vm" {
     dhcp     = true
     hostname = var.hostname
   })
-
-  vsphere_user     = var.vsphere_user
-  vsphere_password = var.vsphere_password
-  vsphere_server   = var.vsphere_server
 }
