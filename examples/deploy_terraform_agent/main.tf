@@ -1,10 +1,5 @@
-locals {
-  user_list = yamldecode(file("${path.module}/templates/users.yaml"))["users"]
-}
-
 resource "tfe_agent_pool" "this" {
-  name                = "vsphere_agent_pool"
-  organization_scoped = false
+  name                = "gcve_agent_pool"
 }
 
 resource "tfe_agent_token" "this" {
@@ -13,19 +8,24 @@ resource "tfe_agent_token" "this" {
 }
 
 module "vm" {
-  for_each = toset(local.user_list)
+  source  = "app.terraform.io/tfo-apj-demos/virtual-machine/vsphere"
+  version = "~> 1.3"
 
-  source = "../.."
-  hostname          = format("%s-tfc-agent", each.value) # This appends -tfc-agent to each username
-  datacenter        = var.datacenter
-  cluster           = var.cluster
-  primary_datastore = var.primary_datastore
-  folder_path       = var.folder_path
-  networks          = var.networks
-  template          = var.vsphere_template_name
+  hostname          = "tfc-agent-${count.index}"
+  datacenter        = "Datacenter"
+  cluster           = "cluster"
+  primary_datastore = "vsanDatastore"
+  folder_path       = "demo workloads"
+  networks = {
+    "seg-general" : "dhcp"
+  }
+  template = "base-ubuntu-2204-20231112110924"
 
   userdata = templatefile("${path.module}/templates/userdata.yaml.tmpl", {
     agent_token = tfe_agent_token.this.token
-    agent_name  = format("%s-tfc-agent", each.value) # Also append -tfc-agent for the agent_name
+    agent_name  = "tfc-agent-${count.index}"
   })
+  tags = {
+    "application" = "tfc-agent"
+  }
 }

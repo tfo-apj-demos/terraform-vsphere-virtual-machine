@@ -39,8 +39,11 @@ resource "vsphere_virtual_machine" "this" {
   firmware  = var.template != "" ? data.vsphere_virtual_machine.this[var.template].firmware : null
 
   scsi_controller_count = length(var.extra_disks) + 1
-  annotation = "Last modified: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
+  annotation = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
+  lifecycle {
+    ignore_changes = [ annotation ]
+  }
   dynamic "network_interface" {
     for_each = var.networks
     content {
