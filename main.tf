@@ -42,7 +42,10 @@ resource "vsphere_virtual_machine" "this" {
   annotation = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
-    ignore_changes = [ annotation ]
+    ignore_changes = [ 
+      annotation,
+      extra_config
+    ]
   }
   dynamic "network_interface" {
     for_each = var.networks
