@@ -27,9 +27,6 @@ module "vm" {
 
   source = "../.."
 
-  vsphere_user      = var.vsphere_user
-  vsphere_password  = var.vsphere_password
-  vsphere_server    = var.vsphere_server
   hostname          = format("%s-tfc-agent", each.value) # This appends -tfc-agent to each username
   datacenter        = var.datacenter
   cluster           = var.cluster
