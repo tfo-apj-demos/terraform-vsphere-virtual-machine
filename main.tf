@@ -10,7 +10,6 @@ network:
   ethernets:
     ens192:
       dhcp4: true
-
 EOH
 }
 
@@ -42,10 +41,10 @@ resource "vsphere_virtual_machine" "this" {
   annotation = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
-    ignore_changes = concat(var.ignore_changes_virtual_machine, [ 
+    ignore_changes = [
       annotation,
       extra_config
-    ])
+    ]
   }
   dynamic "network_interface" {
     for_each = var.networks
