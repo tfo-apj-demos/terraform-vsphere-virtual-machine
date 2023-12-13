@@ -246,4 +246,5 @@ variable "tags" {
 variable "ignore_changes_virtual_machine" {
   type = list(string)
   description = "A list of attributes to pass through to the lifecycle block of the virtual machine. Useful if you do not want a change of template to redeploy a virtual machine."
+  default = tolist([])
 }
