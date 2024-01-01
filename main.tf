@@ -2,6 +2,7 @@ locals {
   windows  = var.template != "" ? length(regexall("^win", data.vsphere_virtual_machine.this[var.template].guest_id)) > 0 : null
   hostname = var.hostname != "" ? var.hostname : "${random_pet.this.id}-${random_integer.this.result}"
 	size = data.vsphere_virtual_machine.this[var.template].disks[0].size
+  static_lifecycle_management = "lifecycle_management:static" in data.vsphere_virtual_machine.existing.tags
   metadata = <<EOH
 local-hostname: ${local.hostname}
 instance-id: ${local.hostname}
@@ -22,6 +23,10 @@ resource "random_integer" "this" {
   max = 9999
 }
 
+data "vsphere_virtual_machine" "existing" {
+  name          = local.hostname
+  datacenter_id = var.remote_ovf_url != "" || var.local_ovf_path != "" ? data.vsphere_datacenter.this.id : null
+}
 resource "vsphere_virtual_machine" "this" {
   name             = local.hostname
   folder           = var.folder_path != "" ? var.folder_path : null
@@ -41,10 +46,13 @@ resource "vsphere_virtual_machine" "this" {
   annotation = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
-    ignore_changes = [
-      annotation,
-      extra_config
-    ]
+    ignore_changes = concat(
+      [
+        annotation,
+        extra_config
+      ],
+      local.static_lifecycle_management ? [clone[0].template_uuid] : []
+    )
   }
   dynamic "network_interface" {
     for_each = var.networks
