@@ -1,8 +1,8 @@
 locals {
-  windows  = var.template != "" ? length(regexall("^win", data.vsphere_virtual_machine.this[var.template].guest_id)) > 0 : null
-  hostname = var.hostname != "" ? var.hostname : "${random_pet.this.id}-${random_integer.this.result}"
-	size = data.vsphere_virtual_machine.this[var.template].disks[0].size
-  static_lifecycle_management = "lifecycle_management:static" in data.vsphere_virtual_machine.existing.tags
+  windows                     = var.template != "" ? length(regexall("^win", data.vsphere_virtual_machine.this[var.template].guest_id)) > 0 : null
+  hostname                    = var.hostname != "" ? var.hostname : "${random_pet.this.id}-${random_integer.this.result}"
+  size                        = data.vsphere_virtual_machine.this[var.template].disks[0].size
+
   metadata = <<EOH
 local-hostname: ${local.hostname}
 instance-id: ${local.hostname}
@@ -23,15 +23,11 @@ resource "random_integer" "this" {
   max = 9999
 }
 
-data "vsphere_virtual_machine" "existing" {
-  name          = local.hostname
-  datacenter_id = var.remote_ovf_url != "" || var.local_ovf_path != "" ? data.vsphere_datacenter.this.id : null
-}
 resource "vsphere_virtual_machine" "this" {
   name             = local.hostname
   folder           = var.folder_path != "" ? var.folder_path : null
   resource_pool_id = var.resource_pool != "" ? data.vsphere_resource_pool.this[var.resource_pool].id : data.vsphere_compute_cluster.this[var.cluster].resource_pool_id
-  tags = var.tags != {} ? [ for tag in module.tags: tag.tag_id ] : null
+  tags             = var.tags != {} ? [for tag in module.tags : tag.tag_id] : null
 
   datastore_id         = var.primary_datastore != "" ? data.vsphere_datastore.this[var.primary_datastore].id : null
   datastore_cluster_id = var.primary_datastore_cluster != "" ? data.vsphere_datastore_cluster.this[var.primary_datastore_cluster].id : null
@@ -43,16 +39,14 @@ resource "vsphere_virtual_machine" "this" {
   firmware  = var.template != "" ? data.vsphere_virtual_machine.this[var.template].firmware : null
 
   scsi_controller_count = length(var.extra_disks) + 1
-  annotation = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
+  annotation            = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
-    ignore_changes = concat(
-      [
-        annotation,
-        extra_config
-      ],
-      local.static_lifecycle_management ? [clone[0].template_uuid] : []
-    )
+    ignore_changes = [
+      annotation,
+      extra_config,
+      clone[0].template_uuid,
+    ]
   }
   dynamic "network_interface" {
     for_each = var.networks
@@ -67,7 +61,7 @@ resource "vsphere_virtual_machine" "this" {
     for_each = var.template != "" ? [0] : []
     content {
       label            = "disk0"
-      size             = var.disk_0_size#local.size
+      size             = var.disk_0_size #local.size
       eagerly_scrub    = data.vsphere_virtual_machine.this[var.template].disks[0].eagerly_scrub
       thin_provisioned = data.vsphere_virtual_machine.this[var.template].disks[0].thin_provisioned
     }
@@ -163,9 +157,9 @@ resource "vsphere_virtual_machine" "this" {
   }
 
   extra_config = {
-      "guestinfo.userdata" = var.userdata != "" ? base64encode(var.userdata) : null
-      "guestinfo.userdata.encoding" = var.userdata != "" ? "base64" : null
-      "guestinfo.metadata" = var.metadata != "" ? base64encode(var.metadata) : base64encode(local.metadata)
-      "guestinfo.metadata.encoding" = "base64"
+    "guestinfo.userdata"          = var.userdata != "" ? base64encode(var.userdata) : null
+    "guestinfo.userdata.encoding" = var.userdata != "" ? "base64" : null
+    "guestinfo.metadata"          = var.metadata != "" ? base64encode(var.metadata) : base64encode(local.metadata)
+    "guestinfo.metadata.encoding" = "base64"
   }
 }
