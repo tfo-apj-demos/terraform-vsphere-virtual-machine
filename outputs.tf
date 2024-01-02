@@ -11,7 +11,7 @@ output "virtual_machine_name" {
 }
 
 output "ip_address" {
-	value = vsphere_virtual_machine.this.default_ip_address
+  value = vsphere_virtual_machine.this.default_ip_address
 }
 
 output "guest_id" {

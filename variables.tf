@@ -220,21 +220,21 @@ variable "extra_disks" {
 }
 
 variable "disk_0_size" {
-	default = 40
+  default = 40
 }
 
 variable "userdata" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "metadata" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "folder_path" {
-  type = string
+  type    = string
   default = ""
 }
 

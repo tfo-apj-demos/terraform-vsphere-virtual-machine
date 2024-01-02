@@ -75,9 +75,9 @@ data "vsphere_vmfs_disks" "this" {
 
 module "tags" {
   for_each = var.tags
-  source = "./modules/tags"
+  source   = "./modules/tags"
 
   tag_category_name = each.key
-  tag_name = each.value
+  tag_name          = each.value
 
 }
