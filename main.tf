@@ -78,6 +78,15 @@ resource "vsphere_virtual_machine" "this" {
     }
   }
 
+  dynamic "cdrom" {
+    for_each = var.cdroms
+    content {
+      client_device = cdrom.value.client_device
+      datastore_id  = cdrom.value.datastore_id != "" ? data.vsphere_datastore.this[cdrom.value.datastore_id].id : null
+      path          = cdrom.value.path
+    }
+  }
+
   dynamic "clone" {
     for_each = var.template != "" ? [0] : []
     content {

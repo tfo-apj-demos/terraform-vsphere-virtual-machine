@@ -47,6 +47,16 @@ variable "disks" {
   default     = []
 }
 
+variable "cdroms" {
+  description = "List of CDROM configurations"
+  type = list(object({
+    client_device = optional(bool)
+    datastore_id  = optional(string)
+    path          = optional(string)
+  }))
+  default = []
+}
+
 variable "hosts" {
   type    = list(string)
   default = []
