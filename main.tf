@@ -45,7 +45,7 @@ resource "vsphere_virtual_machine" "this" {
     ignore_changes = [
       annotation,
       extra_config,
-      clone
+      clone[*].template_uuid
     ]
   }
   dynamic "network_interface" {
