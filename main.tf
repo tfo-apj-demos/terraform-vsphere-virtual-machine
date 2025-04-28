@@ -93,39 +93,42 @@ resource "vsphere_virtual_machine" "this" {
     content {
       template_uuid = data.vsphere_virtual_machine.this[var.template].id
 
-      customize {
-        dynamic "linux_options" {
-          for_each = local.windows == false ? [0] : []
-          content {
-            host_name = local.hostname
-            domain    = var.domain
+      dynamic "customize" {
+        for_each = var.enable_customization ? [0] : []
+        content {
+          dynamic "linux_options" {
+            for_each = local.windows == false ? [0] : []
+            content {
+              host_name = local.hostname
+              domain    = var.domain
+            }
           }
-        }
 
-        dynamic "windows_options" {
-          for_each = local.windows == true ? [0] : []
-          content {
-            computer_name         = local.hostname
-            admin_password        = var.admin_password
-            workgroup             = var.workgroup != "" ? var.workgroup : null
-            join_domain           = var.ad_domain != "" ? var.ad_domain : null
-            domain_admin_user     = var.ad_domain != "" ? var.domain_admin_user : null
-            domain_admin_password = var.ad_domain != "" ? var.domain_admin_password : null
+          dynamic "windows_options" {
+            for_each = local.windows == true ? [0] : []
+            content {
+              computer_name         = local.hostname
+              admin_password        = var.admin_password
+              workgroup             = var.workgroup != "" ? var.workgroup : null
+              join_domain           = var.ad_domain != "" ? var.ad_domain : null
+              domain_admin_user     = var.ad_domain != "" ? var.domain_admin_user : null
+              domain_admin_password = var.ad_domain != "" ? var.domain_admin_password : null
+            }
           }
-        }
 
-        dynamic "network_interface" {
-          for_each = var.networks
-          iterator = network
-          content {
-            ipv4_address = lower(network.value) == "dhcp" ? null : split("/", network.value)[0]
-            ipv4_netmask = lower(network.value) == "dhcp" ? null : split("/", network.value)[1]
+          dynamic "network_interface" {
+            for_each = var.networks
+            iterator = network
+            content {
+              ipv4_address = lower(network.value) == "dhcp" ? null : split("/", network.value)[0]
+              ipv4_netmask = lower(network.value) == "dhcp" ? null : split("/", network.value)[1]
+            }
           }
-        }
 
-        ipv4_gateway    = var.gateway
-        dns_server_list = var.dns_server_list
-        dns_suffix_list = var.dns_suffix_list
+          ipv4_gateway    = var.gateway
+          dns_server_list = var.dns_server_list
+          dns_suffix_list = var.dns_suffix_list
+        }
       }
     }
   }

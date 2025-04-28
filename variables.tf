@@ -252,3 +252,9 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+variable "enable_customization" {
+  description = "Enable customization during cloning. Defaults to true."
+  type        = bool
+  default     = true
+}
