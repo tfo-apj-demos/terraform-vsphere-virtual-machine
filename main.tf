@@ -1,6 +1,6 @@
 locals {
   windows                     = var.template != "" ? length(regexall("^win", data.vsphere_virtual_machine.this[var.template].guest_id)) > 0 : null
-  hostname                    = var.hostname != "" ? var.hostname : "${random_pet.this.id}-${random_integer.this.result}"
+  hostname = var.hostname != "" && var.hostname != null ? var.hostname : "${random_pet.this[0].id}-${random_integer.this[0].result}"
   size                        = data.vsphere_virtual_machine.this[var.template].disks[0].size
 
   metadata = <<EOH
@@ -14,13 +14,17 @@ network:
 EOH
 }
 
+# Create exactly one pet **only** when hostname not supplied
 resource "random_pet" "this" {
+  count  = var.hostname == "" || var.hostname == null ? 1 : 0
   length = 1
 }
 
+# Same rule for the integer
 resource "random_integer" "this" {
-  min = 1000
-  max = 9999
+  count = var.hostname == "" || var.hostname == null ? 1 : 0
+  min   = 1000
+  max   = 9999
 }
 
 resource "vsphere_virtual_machine" "this" {

@@ -85,7 +85,7 @@ variable "template" {
 
 variable "hostname" {
   type    = string
-  default = ""
+  default = null
 }
 
 variable "num_cpus" {
