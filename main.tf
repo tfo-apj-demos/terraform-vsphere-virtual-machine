@@ -52,6 +52,8 @@ resource "vsphere_virtual_machine" "this" {
       annotation,
       extra_config,
       clone,
+      ept_rvi_mode,
+      hv_mode,
     ]
   }
   dynamic "network_interface" {
