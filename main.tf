@@ -45,6 +45,7 @@ resource "vsphere_virtual_machine" "this" {
   scsi_controller_count = length(var.extra_disks) + 1
   ept_rvi_mode = "automatic"
   hv_mode = "hvAuto"
+  sync_time_with_host = true
   annotation            = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
