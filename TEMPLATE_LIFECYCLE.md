@@ -1,10 +1,10 @@
-# Template Lifecycle Management Guide - v1.6.0 (Pets Version)
+# Template Lifecycle Management Guide - v2.0.0 (Cattle Version)
 
-> **📌 This documentation is for v1.6.0 - the PETS version**
+> **📌 This documentation is for v2.0.0 - the CATTLE version**
 >
-> VMs created with this version are **protected from replacement** when templates change or are deleted.
+> VMs created with this version **will be replaced** when templates change.
 >
-> 🐄 **Looking for CATTLE behavior?** Use **v2.0.0** instead.
+> 🐾 **Looking for PETS behavior?** Use **v1.6.0** instead.
 
 This document explains how to handle vSphere template lifecycle issues when using HCP Packer with automated template cleanup.
 
@@ -16,23 +16,23 @@ When using HCP Packer to manage VM templates with automated cleanup (via webhook
 Error: error fetching virtual machine: vm 'base-rhel-9-20251203085132' not found
 ```
 
-## Solution: Template Lifecycle Protection
+## Solution: Version-Based Behavior (v2.0.0 - Cattle)
 
-Due to Terraform's `lifecycle` block limitations (which require static lists), **all VMs are protected from unintentional replacement when templates change**. The `pin_template_version` variable is a semantic flag that documents your operational intent.
+This version (v2.0.0) implements **automatic replacement** when templates change - ideal for immutable infrastructure patterns.
 
-### Cattle Mode (Default: `pin_template_version = false`)
-- **Use case**: Immutable infrastructure, ephemeral VMs, development environments
-- **Behavior**: VMs are protected from automatic replacement, but you can explicitly trigger updates
-- **Template updates**: Use `terraform apply -replace="module.vm.vsphere_virtual_machine.this"` to update
-- **Best for**: Web servers, containerized workloads, auto-scaling instances
+### Cattle Mode (v2.0.0 - This Version)
+- **Use case**: Immutable infrastructure, ephemeral VMs, auto-scaling workloads
+- **Behavior**: VMs are **automatically replaced** when templates are updated
+- **Template updates**: Automatic when using HCP Packer `latest` channel
+- **Best for**: Web servers, API servers, containerized workloads, CI/CD environments
 
-### Pet Mode (`pin_template_version = true`)
+### Pets Mode (v1.6.0 - Alternative Version)
 - **Use case**: Stateful VMs, databases, legacy applications
-- **Behavior**: VMs are **protected** from all template-related replacements
-- **Template updates**: Protected - requires explicit `-replace` flag if needed (rarely used)
+- **Behavior**: VMs are **protected** from template-related replacements
+- **Template updates**: Protected - VMs never replaced due to template changes
 - **Best for**: Production databases, Active Directory servers, specialized appliances
 
-> **Note:** The actual lifecycle behavior is identical for both modes. The variable serves as documentation and allows for future enhancements.
+> **Note:** Choose version based on your operational model. Use v2.0.0 for cattle, v1.6.0 for pets.
 
 ## Configuration
 

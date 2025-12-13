@@ -49,19 +49,16 @@ resource "vsphere_virtual_machine" "this" {
   annotation            = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
-    # NOTE: ignore_changes requires a static list (no dynamic expressions allowed)
-    # Template-derived properties are always ignored to prevent unintentional replacements
-    # For cattle VMs: Use 'terraform apply -replace=<resource>' to explicitly update
-    # For pets VMs: Protected from all template changes automatically
+    # NOTE: v2.0.0 CATTLE version - template changes trigger VM replacement
+    # Only metadata properties are ignored, NOT template-derived properties
+    # This allows VMs to be replaced when templates are updated
     ignore_changes = [
       annotation,
       extra_config,
-      clone,
       ept_rvi_mode,
       hv_mode,
-      guest_id,
-      scsi_type,
-      firmware,
+      # NOTE: clone, guest_id, scsi_type, firmware are NOT in ignore_changes
+      # Changes to these (from template updates) will trigger replacement
     ]
   }
   dynamic "network_interface" {

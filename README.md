@@ -1,51 +1,53 @@
-# vSphere Virtual Machine - v1.6.0 (Pets Version)
+# vSphere Virtual Machine - v2.0.0 (Cattle Version)
 
-> **⚠️ Important:** This is the **PETS version** of the module. VMs created with this version are **protected from replacement** when templates change or are deleted.
+> **⚠️ Important:** This is the **CATTLE version** of the module. VMs created with this version **will be replaced** when templates are updated.
 >
-> 🐄 **Looking for the CATTLE version?** Use **v2.0.0** instead, which allows VMs to be replaced when templates are updated.
+> 🐾 **Looking for the PETS version?** Use **v1.6.0** instead, which protects VMs from template changes.
 
 ## Overview
 
-This module deploys vSphere Virtual Machines with **template lifecycle protection**, making it ideal for:
+This module deploys vSphere Virtual Machines with **automatic template updates**, making it ideal for:
 
-- 🐾 **Long-lived VMs** (pets) - Databases, stateful applications, legacy systems
-- 🔒 **Stable infrastructure** - VMs that should never be accidentally replaced
-- 📌 **Version-pinned workloads** - Systems that must stay on specific OS versions
+- 🐄 **Immutable infrastructure** (cattle) - Web servers, application servers, containerized workloads
+- 🔄 **Auto-scaling workloads** - VMs that should update when templates change
+- 🚀 **CI/CD pipelines** - Development and staging environments
 
-### Key Behavior (v1.6.0)
+### Key Behavior (v2.0.0)
 
-**Template Lifecycle Protection:**
-- ✅ VMs are **NOT replaced** when source templates are updated or deleted
-- ✅ Can run `terraform plan` even after templates are cleaned up from vSphere
-- ✅ Template-derived properties (`guest_id`, `scsi_type`, `firmware`) are ignored in lifecycle
-- ✅ VMs remain stable across Packer template rotations
+**Automatic Template Updates:**
+- ✅ VMs are **automatically replaced** when source templates are updated
+- ✅ Ensures all VMs run the latest approved template version
+- ✅ Template-derived properties (`guest_id`, `scsi_type`, `firmware`) trigger replacement
+- ✅ Integrates seamlessly with HCP Packer template rotations
 
-**When Template Updates Are Needed:**
-```bash
-# To explicitly update a VM to a new template (rare for pets):
-terraform apply -replace="module.my_vm.vsphere_virtual_machine.this"
+**How It Works:**
+When your HCP Packer builds a new template and you update the template reference:
+```hcl
+template = data.hcp_packer_artifact.latest.external_identifier  # Points to new template
 ```
+
+Next `terraform apply` → VM will be replaced with the new template ✅
 
 ## Quick Start
 
 ### Basic Usage
 
 ```hcl
-module "database_server" {
+module "web_server" {
   source  = "app.terraform.io/your-org/virtual-machine/vsphere"
-  version = "1.6.0"  # Pets version
+  version = "2.0.0"  # Cattle version
 
-  hostname          = "prod-db-01"
+  hostname          = "web-server-01"
   datacenter        = "Datacenter"
   cluster           = "Production"
   primary_datastore = "datastore1"
 
-  template = "rhel-9-template"
-  num_cpus = 4
-  memory   = 8192
+  template = "ubuntu-22.04-template"
+  num_cpus = 2
+  memory   = 4096
 
   networks = {
-    "VM Network" = "10.0.1.10/24"
+    "VM Network" = "dhcp"
   }
 }
 ```
@@ -53,19 +55,19 @@ module "database_server" {
 ### With HCP Packer Integration
 
 ```hcl
-data "hcp_packer_artifact" "rhel9" {
-  bucket_name  = "base-rhel-9"
-  channel_name = "latest"
+data "hcp_packer_artifact" "ubuntu" {
+  bucket_name  = "base-ubuntu-2204"
+  channel_name = "latest"  # Always uses latest template
   platform     = "vsphere"
   region       = "Datacenter"
 }
 
-module "app_server" {
+module "api_server" {
   source  = "app.terraform.io/your-org/virtual-machine/vsphere"
-  version = "1.6.0"
+  version = "2.0.0"
 
-  hostname = "app-server-01"
-  template = data.hcp_packer_artifact.rhel9.external_identifier
+  hostname = "api-server-01"
+  template = data.hcp_packer_artifact.ubuntu.external_identifier
 
   datacenter        = "Datacenter"
   cluster           = "Production"
@@ -80,37 +82,60 @@ module "app_server" {
 }
 ```
 
-**Important:** When old Packer templates are deleted:
-1. The VM continues running (not affected)
-2. `terraform plan` with `-refresh=false` will work fine
-3. VM will never be replaced due to missing template
+**Automatic Updates:** When HCP Packer builds a new template:
+1. `data.hcp_packer_artifact.ubuntu` automatically points to new template
+2. Next `terraform apply` → VM is replaced with latest template ✅
+3. Old template can be safely deleted from vSphere
 
-## Handling Deleted Templates
+## Handling Template Updates
 
-When your HCP Packer cleanup process deletes old templates:
+### Automatic Updates with HCP Packer
 
-### Option 1: Disable Refresh (Recommended for Pets)
-
-**In Terraform Cloud workspace settings:**
-- Add CLI argument: `-refresh=false`
-
-**Or via variable:**
-```hcl
-# In workspace configuration
-TF_CLI_ARGS_plan = "-refresh=false"
-```
-
-### Option 2: Temporarily Point to Valid Template
+When using HCP Packer's `latest` channel, updates are automatic:
 
 ```hcl
-# If you must run with refresh enabled, point to any valid template
-module "pet_vm" {
-  source   = "..."
-  template = "rhel-9-latest"  # Any existing template (just for state refresh)
-
-  # VM won't be replaced thanks to lifecycle protection
+data "hcp_packer_artifact" "ubuntu" {
+  bucket_name  = "base-ubuntu-2204"
+  channel_name = "latest"  # Automatically tracks latest
+  # ...
 }
 ```
+
+**Workflow:**
+1. HCP Packer builds new template
+2. `latest` channel automatically points to new build
+3. Next `terraform plan` shows replacement
+4. `terraform apply` replaces VM with new template
+
+### Controlled Updates with Iterations
+
+For more control, use specific iterations:
+
+```hcl
+data "hcp_packer_artifact" "ubuntu" {
+  bucket_name   = "base-ubuntu-2204"
+  iteration_id  = "01HQXYZ..."  # Specific iteration
+  # ...
+}
+```
+
+**Workflow:**
+1. Test new template in dev/staging
+2. Manually update `iteration_id` when ready
+3. `terraform apply` rolls out new template
+
+### Deleted Templates
+
+If a template is deleted before replacement:
+- ❌ `terraform plan` will fail (template not found)
+- ✅ **Solution:** Update template reference to valid template:
+
+```hcl
+# Update to any valid template
+template = data.hcp_packer_artifact.ubuntu.external_identifier
+```
+
+Run `terraform apply` → VM replaced with new template ✅
 
 ## Key Features
 
@@ -167,31 +192,36 @@ userdata = templatefile("${path.module}/cloud-init.yaml", {
 })
 ```
 
-## Template Lifecycle Protection Details
+## Template Lifecycle Details
 
-### What Gets Protected
+### What Triggers Replacement (Cattle Behavior)
+
+Changes to these properties **will** cause VM replacement:
+
+| Property | Source | Why It Triggers Replacement |
+|----------|--------|---------------------------|
+| `hostname` / `name` | Direct input | VM identity change |
+| `template` | HCP Packer / direct | **Template updated** |
+| `guest_id` | Template | OS type changed in new template |
+| `scsi_type` | Template | Storage controller changed |
+| `firmware` | Template | BIOS/EFI changed |
+| `num_cpus` | Direct input | Resource change |
+| `memory` | Direct input | Resource change |
+| `datacenter` | Direct input | Location change |
+| `cluster` | Direct input | Compute resource change |
+| `primary_datastore` | Direct input | Storage change |
+| Network configuration | Direct input | Network topology change |
+
+### What Gets Ignored (Won't Trigger Replacement)
 
 The following properties are in `lifecycle.ignore_changes`:
 
-| Property | Why Protected |
-|----------|--------------|
+| Property | Why Ignored |
+|----------|------------|
 | `annotation` | Creation timestamp changes on every plan |
 | `extra_config` | Cloud-init metadata shouldn't trigger replacement |
-| `clone` | Template reference shouldn't cause replacement |
-| `guest_id` | OS type derived from template |
-| `scsi_type` | SCSI controller type from template |
-| `firmware` | BIOS/EFI setting from template |
-
-### What Still Triggers Replacement
-
-Changes to these properties **will** cause VM replacement:
-- `hostname` / `name`
-- `num_cpus`
-- `memory`
-- `datacenter`
-- `cluster`
-- `primary_datastore`
-- Network configuration
+| `ept_rvi_mode` | CPU virtualization setting (managed by vSphere) |
+| `hv_mode` | Hypervisor mode (managed by vSphere) |
 
 ## Inputs
 
@@ -259,34 +289,34 @@ Changes to these properties **will** cause VM replacement:
 
 | Version | Type | Template Changes | Use Case | When to Use |
 |---------|------|-----------------|----------|-------------|
-| **v1.6.0** (this) | 🐾 **Pets** | Protected - VMs never replaced | Databases, stateful apps | Long-lived infrastructure |
-| **v2.0.0** | 🐄 **Cattle** | Triggers replacement | Immutable infrastructure | Web servers, auto-scaling |
+| **v1.6.0** | 🐾 **Pets** | Protected - VMs never replaced | Databases, stateful apps | Long-lived infrastructure |
+| **v2.0.0** (this) | 🐄 **Cattle** | Triggers replacement | Immutable infrastructure | Web servers, auto-scaling |
 
 ## Migration Guide
 
-### Upgrading from v1.5.x to v1.6.0
+### Upgrading from v1.5.x to v2.0.0
 
 No breaking changes! Simply update the version:
 
 ```hcl
 module "my_vm" {
   source  = "app.terraform.io/your-org/virtual-machine/vsphere"
-  version = "1.6.0"  # Was 1.5.2 or earlier
+  version = "2.0.0"  # Was 1.5.2 or earlier
 
   # All existing inputs remain the same
 }
 ```
 
-Run `terraform plan` - should show no changes.
+Run `terraform plan` - should show no changes (unless template has changed).
 
-### Moving to v2.0.0 (Cattle)
+### Downgrading to v1.6.0 (Pets)
 
-If you want cattle behavior (replacements on template updates):
+If you want pets behavior (protection from template updates):
 
 ```hcl
 module "my_vm" {
   source  = "app.terraform.io/your-org/virtual-machine/vsphere"
-  version = "2.0.0"  # Cattle version
+  version = "1.6.0"  # Pets version
 
   # Same inputs
 }
@@ -319,4 +349,4 @@ For issues, questions, or contributions:
 
 ---
 
-**Remember:** This is the **PETS version (v1.6.0)** - VMs are protected from template changes. Use **v2.0.0** for cattle behavior.
+**Remember:** This is the **CATTLE version (v2.0.0)** - VMs will be replaced when templates change. Use **v1.6.0** for pets behavior (protection from template changes).
