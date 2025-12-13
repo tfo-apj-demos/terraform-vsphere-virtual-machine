@@ -83,6 +83,12 @@ variable "template" {
   default = ""
 }
 
+variable "pin_template_version" {
+  description = "Pin the VM to use a specific template version. When true (pets), prevents force-replacement when template is updated/deleted. When false (cattle), VM will be replaced when template changes."
+  type        = bool
+  default     = false
+}
+
 variable "hostname" {
   type    = string
   default = null

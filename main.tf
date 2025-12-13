@@ -1,7 +1,7 @@
 locals {
-  windows                     = var.template != "" ? length(regexall("^win", data.vsphere_virtual_machine.this[var.template].guest_id)) > 0 : null
+  windows  = var.template != "" ? try(length(regexall("^win", data.vsphere_virtual_machine.this[var.template].guest_id)) > 0, null) : null
   hostname = var.hostname != "" && var.hostname != null ? var.hostname : "${random_pet.this[0].id}-${random_integer.this[0].result}"
-  size                        = data.vsphere_virtual_machine.this[var.template].disks[0].size
+  size     = try(data.vsphere_virtual_machine.this[var.template].disks[0].size, null)
 
   metadata = <<EOH
 local-hostname: ${local.hostname}
@@ -38,9 +38,9 @@ resource "vsphere_virtual_machine" "this" {
 
   num_cpus  = var.num_cpus
   memory    = var.memory
-  guest_id  = var.template != "" ? data.vsphere_virtual_machine.this[var.template].guest_id : null
-  scsi_type = var.template != "" ? data.vsphere_virtual_machine.this[var.template].scsi_type : null
-  firmware  = var.template != "" ? data.vsphere_virtual_machine.this[var.template].firmware : null
+  guest_id  = var.template != "" ? try(data.vsphere_virtual_machine.this[var.template].guest_id, null) : null
+  scsi_type = var.template != "" ? try(data.vsphere_virtual_machine.this[var.template].scsi_type, null) : null
+  firmware  = var.template != "" ? try(data.vsphere_virtual_machine.this[var.template].firmware, null) : null
 
   scsi_controller_count = length(var.extra_disks) + 1
   ept_rvi_mode = "automatic"
@@ -49,13 +49,22 @@ resource "vsphere_virtual_machine" "this" {
   annotation            = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
-    ignore_changes = [
-      annotation,
-      extra_config,
-      clone,
-      ept_rvi_mode,
-      hv_mode,
-    ]
+    ignore_changes = concat(
+      [
+        annotation,
+        extra_config,
+        clone,
+        ept_rvi_mode,
+        hv_mode,
+      ],
+      # When pin_template_version is true (pets), ignore changes to template-derived properties
+      # This prevents force-replacement when the template is updated or deleted
+      var.pin_template_version ? [
+        guest_id,
+        scsi_type,
+        firmware,
+      ] : []
+    )
   }
   dynamic "network_interface" {
     for_each = var.networks
@@ -71,8 +80,8 @@ resource "vsphere_virtual_machine" "this" {
     content {
       label            = "disk0"
       size             = var.disk_0_size #local.size
-      eagerly_scrub    = data.vsphere_virtual_machine.this[var.template].disks[0].eagerly_scrub
-      thin_provisioned = data.vsphere_virtual_machine.this[var.template].disks[0].thin_provisioned
+      eagerly_scrub    = try(data.vsphere_virtual_machine.this[var.template].disks[0].eagerly_scrub, false)
+      thin_provisioned = try(data.vsphere_virtual_machine.this[var.template].disks[0].thin_provisioned, true)
     }
   }
 
@@ -100,7 +109,7 @@ resource "vsphere_virtual_machine" "this" {
   dynamic "clone" {
     for_each = var.template != "" ? [0] : []
     content {
-      template_uuid = data.vsphere_virtual_machine.this[var.template].id
+      template_uuid = try(data.vsphere_virtual_machine.this[var.template].id, null)
 
       dynamic "customize" {
         for_each = var.enable_customization ? [0] : []
