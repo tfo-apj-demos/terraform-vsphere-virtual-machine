@@ -307,10 +307,10 @@ run "test_output_with_generated_hostname" {
     error_message = "Output virtual_machine_name should contain generated hostname"
   }
 
-  # Verify generated hostname format
+  # Verify generated hostname format (allows hyphens in the pet name)
   assert {
-    condition     = can(regex("^[a-z]+-[0-9]+$", output.virtual_machine_name))
-    error_message = "Generated hostname output should follow pattern: {word}-{number}"
+    condition     = can(regex("^[a-z-]+-[0-9]+$", output.virtual_machine_name))
+    error_message = "Generated hostname output should follow pattern: {word(s)}-{number}"
   }
 }
 

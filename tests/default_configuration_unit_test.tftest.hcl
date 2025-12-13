@@ -80,6 +80,8 @@ mock_provider "vsphere" {
       id                  = "vm-444"
       name                = "test-vm"
       guest_id            = "ubuntu64Guest"
+      firmware            = "efi"
+      scsi_type           = "pvscsi"
       default_ip_address  = "192.168.1.100"
       power_state         = "on"
     }
