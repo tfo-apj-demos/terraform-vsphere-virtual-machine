@@ -181,6 +181,16 @@ run "test_template_inheritance" {
     hostname = "test-template-props"
   }
 
+  # Override resource to ensure template-inherited values are set during apply
+  override_resource {
+    target = vsphere_virtual_machine.this
+    values = {
+      firmware  = "efi"
+      guest_id  = "ubuntu64Guest"
+      scsi_type = "pvscsi"
+    }
+  }
+
   # Verify guest_id is inherited from template
   assert {
     condition     = vsphere_virtual_machine.this.guest_id == "ubuntu64Guest"
