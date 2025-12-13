@@ -179,12 +179,12 @@ run "test_template_inheritance" {
     hostname = "test-template-props"
   }
 
-  # Override to make template-inherited values available during plan
-  override_resource {
-    target = vsphere_virtual_machine.this
+  # Override to make template data source values available during plan
+  override_data {
+    target = data.vsphere_virtual_machine.this["ubuntu-20.04-template"]
     values = {
-      guest_id  = "ubuntu64Guest"
       firmware  = "efi"
+      guest_id  = "ubuntu64Guest"
       scsi_type = "pvscsi"
     }
   }
@@ -325,6 +325,10 @@ run "test_scsi_controller_count_with_disks" {
 
   variables {
     hostname = "test-scsi-extra"
+    # Use primary_datastore instead of primary_datastore_cluster to avoid conflicts
+    # with extra_disks that have their own datastore_id
+    primary_datastore_cluster = ""
+    primary_datastore        = "datastore-111"
     extra_disks = [
       {
         path         = "[datastore1] vm/disk1.vmdk"
