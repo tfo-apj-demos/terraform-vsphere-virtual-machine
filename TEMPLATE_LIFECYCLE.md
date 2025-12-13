@@ -10,21 +10,23 @@ When using HCP Packer to manage VM templates with automated cleanup (via webhook
 Error: error fetching virtual machine: vm 'base-rhel-9-20251203085132' not found
 ```
 
-## Solution: Template Version Pinning
+## Solution: Template Lifecycle Protection
 
-The module now supports **two operational modes** controlled by the `pin_template_version` variable:
+Due to Terraform's `lifecycle` block limitations (which require static lists), **all VMs are protected from unintentional replacement when templates change**. The `pin_template_version` variable is a semantic flag that documents your operational intent.
 
 ### Cattle Mode (Default: `pin_template_version = false`)
 - **Use case**: Immutable infrastructure, ephemeral VMs, development environments
-- **Behavior**: VMs will be **replaced** when the template changes
-- **Template updates**: Automatic - just update the template reference and apply
+- **Behavior**: VMs are protected from automatic replacement, but you can explicitly trigger updates
+- **Template updates**: Use `terraform apply -replace="module.vm.vsphere_virtual_machine.this"` to update
 - **Best for**: Web servers, containerized workloads, auto-scaling instances
 
 ### Pet Mode (`pin_template_version = true`)
 - **Use case**: Stateful VMs, databases, legacy applications
-- **Behavior**: VMs are **protected** from replacement when template changes
-- **Template updates**: Manual - requires explicit action to upgrade
+- **Behavior**: VMs are **protected** from all template-related replacements
+- **Template updates**: Protected - requires explicit `-replace` flag if needed (rarely used)
 - **Best for**: Production databases, Active Directory servers, specialized appliances
+
+> **Note:** The actual lifecycle behavior is identical for both modes. The variable serves as documentation and allows for future enhancements.
 
 ## Configuration
 
@@ -148,33 +150,49 @@ terraform apply
 terraform apply
 ```
 
-### Scenario 3: Cattle VM - Always Use Latest
+### Scenario 3: Cattle VM - Explicit Template Updates
 
-Cattle VMs automatically update when you change the template reference:
+For cattle VMs, explicitly trigger replacement when updating to a new template:
 
 ```hcl
 module "cattle_vm" {
   source   = "..."
   template = data.hcp_packer_artifact.latest.external_identifier
 
-  pin_template_version = false  # Allows replacement
+  pin_template_version = false  # Semantic flag (behavior is same as true)
 }
 ```
 
 When HCP Packer builds a new template:
-1. Update your HCP Packer channel or iteration reference
-2. Run `terraform apply`
+1. Update your HCP Packer channel or iteration reference (if needed)
+2. Run `terraform apply -replace="module.cattle_vm.vsphere_virtual_machine.this"`
 3. VM will be replaced with new template ✅
+
+**Alternative: Use Terraform Cloud workflows**
+```bash
+# In Terraform Cloud, create a "rolling update" workflow
+for vm in $(terraform state list | grep cattle); do
+  terraform apply -replace="$vm"
+  sleep 300  # Wait for health checks
+done
+```
 
 ## Technical Implementation Details
 
-### What Gets Protected with `pin_template_version = true`
+### What Gets Protected (Always)
 
-The following properties are added to `lifecycle.ignore_changes` when pinning is enabled:
+The following properties are **always** in `lifecycle.ignore_changes` for all VMs:
 
+- `annotation` - Creation timestamp
+- `extra_config` - Cloud-init metadata
+- `clone` - Template reference block
+- `ept_rvi_mode` - CPU virtualization mode
+- `hv_mode` - Hypervisor mode
 - `guest_id` - Guest OS identifier
 - `scsi_type` - SCSI controller type
 - `firmware` - BIOS/EFI firmware type
+
+**Why:** Terraform's `lifecycle.ignore_changes` requires a static list - dynamic expressions like `concat()` or ternary operators are not allowed. This is a Terraform limitation, not a module limitation.
 
 These properties are derived from the template at creation time. Once set, changes to these values (from updated templates) won't trigger VM replacement.
 

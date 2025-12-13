@@ -49,22 +49,20 @@ resource "vsphere_virtual_machine" "this" {
   annotation            = "Created: ${formatdate("DD MMM YYYY hh:mm ZZZ", timestamp())}"
 
   lifecycle {
-    ignore_changes = concat(
-      [
-        annotation,
-        extra_config,
-        clone,
-        ept_rvi_mode,
-        hv_mode,
-      ],
-      # When pin_template_version is true (pets), ignore changes to template-derived properties
-      # This prevents force-replacement when the template is updated or deleted
-      var.pin_template_version ? [
-        guest_id,
-        scsi_type,
-        firmware,
-      ] : []
-    )
+    # NOTE: ignore_changes requires a static list (no dynamic expressions allowed)
+    # Template-derived properties are always ignored to prevent unintentional replacements
+    # For cattle VMs: Use 'terraform apply -replace=<resource>' to explicitly update
+    # For pets VMs: Protected from all template changes automatically
+    ignore_changes = [
+      annotation,
+      extra_config,
+      clone,
+      ept_rvi_mode,
+      hv_mode,
+      guest_id,
+      scsi_type,
+      firmware,
+    ]
   }
   dynamic "network_interface" {
     for_each = var.networks

@@ -84,7 +84,7 @@ variable "template" {
 }
 
 variable "pin_template_version" {
-  description = "Pin the VM to use a specific template version. When true (pets), prevents force-replacement when template is updated/deleted. When false (cattle), VM will be replaced when template changes."
+  description = "Semantic flag indicating VM operational mode. When true (pets), indicates VMs should be long-lived and protected. When false (cattle), indicates VMs are immutable and can be replaced. NOTE: Due to Terraform lifecycle limitations, template changes are always ignored. For cattle VMs, use 'terraform apply -replace' to explicitly update to new templates."
   type        = bool
   default     = false
 }
