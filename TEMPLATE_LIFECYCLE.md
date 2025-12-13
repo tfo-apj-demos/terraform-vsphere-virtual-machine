@@ -1,4 +1,10 @@
-# Template Lifecycle Management Guide
+# Template Lifecycle Management Guide - v1.6.0 (Pets Version)
+
+> **📌 This documentation is for v1.6.0 - the PETS version**
+>
+> VMs created with this version are **protected from replacement** when templates change or are deleted.
+>
+> 🐄 **Looking for CATTLE behavior?** Use **v2.0.0** instead.
 
 This document explains how to handle vSphere template lifecycle issues when using HCP Packer with automated template cleanup.
 

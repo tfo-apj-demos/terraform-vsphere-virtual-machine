@@ -83,12 +83,6 @@ variable "template" {
   default = ""
 }
 
-variable "pin_template_version" {
-  description = "Semantic flag indicating VM operational mode. When true (pets), indicates VMs should be long-lived and protected. When false (cattle), indicates VMs are immutable and can be replaced. NOTE: Due to Terraform lifecycle limitations, template changes are always ignored. For cattle VMs, use 'terraform apply -replace' to explicitly update to new templates."
-  type        = bool
-  default     = false
-}
-
 variable "hostname" {
   type    = string
   default = null
