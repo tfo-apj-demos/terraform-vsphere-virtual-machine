@@ -7,3 +7,6 @@ terraform {
     }
   }
 }
+
+provider "vsphere" {
+}
