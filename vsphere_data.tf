@@ -21,7 +21,11 @@ data "vsphere_datacenter" "this" {
 }
 
 data "vsphere_datastore" "this" {
-  for_each      = var.primary_datastore != "" ? toset([var.primary_datastore]) : toset([])
+  for_each = toset(concat(
+    var.primary_datastore != "" ? [var.primary_datastore] : [],
+    [for disk in var.extra_disks : disk["datastore_id"] if can(disk["datastore_id"])],
+    [for cdrom in var.cdroms : cdrom.datastore_id if can(cdrom.datastore_id) && cdrom.datastore_id != ""]
+  ))
   name          = each.value
   datacenter_id = data.vsphere_datacenter.this.id
 }

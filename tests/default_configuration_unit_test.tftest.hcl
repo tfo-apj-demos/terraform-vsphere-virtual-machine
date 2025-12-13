@@ -40,6 +40,14 @@ mock_provider "vsphere" {
     }
   }
 
+  mock_data "vsphere_datastore" {
+    defaults = {
+      id            = "datastore-111"
+      name          = "datastore-111"
+      datacenter_id = "datacenter-123"
+    }
+  }
+
   mock_data "vsphere_network" {
     defaults = {
       id            = "network-222"
@@ -169,6 +177,16 @@ run "test_template_inheritance" {
 
   variables {
     hostname = "test-template-props"
+  }
+
+  # Override to make template-inherited values available during plan
+  override_resource {
+    target = vsphere_virtual_machine.this
+    values = {
+      guest_id  = "ubuntu64Guest"
+      firmware  = "efi"
+      scsi_type = "pvscsi"
+    }
   }
 
   # Verify guest_id is inherited from template

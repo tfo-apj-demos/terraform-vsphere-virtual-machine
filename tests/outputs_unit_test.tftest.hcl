@@ -103,6 +103,14 @@ mock_provider "random" {
 run "test_virtual_machine_id_output" {
   command = plan
 
+  # Override to make the VM ID available during plan
+  override_resource {
+    target = vsphere_virtual_machine.this
+    values = {
+      id = "vm-test-12345"
+    }
+  }
+
   # Verify virtual_machine_id output is not empty
   assert {
     condition     = output.virtual_machine_id != ""
@@ -299,6 +307,14 @@ run "test_output_with_generated_hostname" {
 
   variables {
     hostname = null  # Trigger hostname generation
+  }
+
+  # Override to make the generated name available during plan
+  override_resource {
+    target = vsphere_virtual_machine.this
+    values = {
+      name = "test-pet-1234"
+    }
   }
 
   # Verify virtual_machine_name output contains generated hostname

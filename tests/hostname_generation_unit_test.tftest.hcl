@@ -143,6 +143,14 @@ run "test_hostname_empty_string" {
     hostname = ""
   }
 
+  # Override to make the generated name available during plan
+  override_resource {
+    target = vsphere_virtual_machine.this
+    values = {
+      name = "happy-dolphin-5678"
+    }
+  }
+
   # Verify that random_pet resource IS created when hostname is empty
   assert {
     condition     = length(random_pet.this) == 1
@@ -189,6 +197,14 @@ run "test_hostname_null" {
     hostname = null
   }
 
+  # Override to make the generated name available during plan
+  override_resource {
+    target = vsphere_virtual_machine.this
+    values = {
+      name = "happy-dolphin-5678"
+    }
+  }
+
   # Verify that random_pet resource IS created when hostname is null
   assert {
     condition     = length(random_pet.this) == 1
@@ -215,6 +231,14 @@ run "test_hostname_not_set" {
   command = plan
 
   # Do not set hostname variable at all - uses default (null)
+
+  # Override to make the generated name available during plan
+  override_resource {
+    target = vsphere_virtual_machine.this
+    values = {
+      name = "happy-dolphin-5678"
+    }
+  }
 
   # Verify that random_pet resource IS created when hostname uses default
   assert {
