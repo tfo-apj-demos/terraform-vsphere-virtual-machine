@@ -173,20 +173,10 @@ run "test_default_network_adapter" {
 # Test 4: Guest ID and Firmware from Template
 # ============================================================================
 run "test_template_inheritance" {
-  command = plan
+  command = apply
 
   variables {
     hostname = "test-template-props"
-  }
-
-  # Override to make template data source values available during plan
-  override_data {
-    target = data.vsphere_virtual_machine.this["ubuntu-20.04-template"]
-    values = {
-      firmware  = "efi"
-      guest_id  = "ubuntu64Guest"
-      scsi_type = "pvscsi"
-    }
   }
 
   # Verify guest_id is inherited from template
@@ -396,13 +386,13 @@ run "test_default_tags" {
 
   # Verify tags default to empty map
   assert {
-    condition     = var.tags == {}
+    condition     = length(var.tags) == 0
     error_message = "tags should default to empty map"
   }
 
-  # Verify VM tags are null when no tags provided
+  # Verify VM tags are null when no tags provided (mocked as empty list)
   assert {
-    condition     = vsphere_virtual_machine.this.tags == null
-    error_message = "VM tags should be null when no tags are configured"
+    condition     = vsphere_virtual_machine.this.tags == null || length(vsphere_virtual_machine.this.tags) == 0
+    error_message = "VM tags should be null or empty when no tags are configured"
   }
 }

@@ -137,18 +137,10 @@ run "test_hostname_provided" {
 # Test 2: Hostname empty string - should generate hostname
 # ============================================================================
 run "test_hostname_empty_string" {
-  command = plan
+  command = apply
 
   variables {
     hostname = ""
-  }
-
-  # Override to make the generated name available during plan
-  override_resource {
-    target = vsphere_virtual_machine.this
-    values = {
-      name = "happy-dolphin-5678"
-    }
   }
 
   # Verify that random_pet resource IS created when hostname is empty
@@ -165,7 +157,7 @@ run "test_hostname_empty_string" {
 
   # Verify that the hostname follows the expected format: {pet}-{number}
   assert {
-    condition     = vsphere_virtual_machine.this.name == "happy-dolphin-5678"
+    condition     = vsphere_virtual_machine.this.name == "${random_pet.this[0].id}-${random_integer.this[0].result}"
     error_message = "Generated hostname should follow format: {pet}-{number}"
   }
 
@@ -191,18 +183,10 @@ run "test_hostname_empty_string" {
 # Test 3: Hostname null - should generate hostname
 # ============================================================================
 run "test_hostname_null" {
-  command = plan
+  command = apply
 
   variables {
     hostname = null
-  }
-
-  # Override to make the generated name available during plan
-  override_resource {
-    target = vsphere_virtual_machine.this
-    values = {
-      name = "happy-dolphin-5678"
-    }
   }
 
   # Verify that random_pet resource IS created when hostname is null
@@ -219,7 +203,7 @@ run "test_hostname_null" {
 
   # Verify that the hostname follows the expected format
   assert {
-    condition     = vsphere_virtual_machine.this.name == "happy-dolphin-5678"
+    condition     = vsphere_virtual_machine.this.name == "${random_pet.this[0].id}-${random_integer.this[0].result}"
     error_message = "Generated hostname should follow format: {pet}-{number} when hostname is null"
   }
 }
@@ -228,17 +212,9 @@ run "test_hostname_null" {
 # Test 4: Hostname not set (uses default) - should generate hostname
 # ============================================================================
 run "test_hostname_not_set" {
-  command = plan
+  command = apply
 
   # Do not set hostname variable at all - uses default (null)
-
-  # Override to make the generated name available during plan
-  override_resource {
-    target = vsphere_virtual_machine.this
-    values = {
-      name = "happy-dolphin-5678"
-    }
-  }
 
   # Verify that random_pet resource IS created when hostname uses default
   assert {
@@ -254,7 +230,7 @@ run "test_hostname_not_set" {
 
   # Verify that the hostname follows the expected format
   assert {
-    condition     = vsphere_virtual_machine.this.name == "happy-dolphin-5678"
+    condition     = vsphere_virtual_machine.this.name == "${random_pet.this[0].id}-${random_integer.this[0].result}"
     error_message = "Generated hostname should follow format: {pet}-{number} when hostname not set"
   }
 }
